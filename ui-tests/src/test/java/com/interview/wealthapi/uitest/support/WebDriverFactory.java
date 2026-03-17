@@ -28,6 +28,10 @@ public final class WebDriverFactory {
         return DRIVER.get();
     }
 
+    public static WebDriver getCurrent() {
+        return DRIVER.get();
+    }
+
     public static void dispose() {
         WebDriver driver = DRIVER.get();
         if (driver != null) {

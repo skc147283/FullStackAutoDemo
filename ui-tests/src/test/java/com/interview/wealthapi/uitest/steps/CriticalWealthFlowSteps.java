@@ -3,20 +3,17 @@ package com.interview.wealthapi.uitest.steps;
 import com.interview.wealthapi.uitest.pages.WealthDashboardPage;
 import com.interview.wealthapi.uitest.support.UiScenarioContext;
 import com.interview.wealthapi.uitest.support.WebDriverFactory;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 
-public class CriticalWealthFlowSteps {
+public class CriticalWealthFlowSteps extends SharedUiSteps {
 
     private final UiScenarioContext context = new UiScenarioContext();
     private final WealthDashboardPage page = new WealthDashboardPage(WebDriverFactory.getOrCreate());
     private final String baseUrl = System.getProperty("ui.base-url", "http://localhost:8080");
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String customerStatus;
     private String sourceAccountStatus;
@@ -33,7 +30,7 @@ public class CriticalWealthFlowSteps {
 
     @When("I onboard a balanced customer")
     public void onboardCustomer() {
-        String email = "ui." + UUID.randomUUID() + "@example.com";
+        String email = "test.ui." + System.currentTimeMillis() + "@qa.internal";
         customerStatus = page.createCustomer("UI Demo User", email, "BALANCED");
         context.setCustomerId(extractField(customerStatus, "id"));
     }
@@ -83,16 +80,5 @@ public class CriticalWealthFlowSteps {
         Assertions.assertTrue(rebalanceStatus.contains("guidance"), "Rebalance response should include guidance");
     }
 
-    private String extractField(String json, String fieldName) {
-        try {
-            JsonNode node = objectMapper.readTree(json);
-            JsonNode valueNode = node.get(fieldName);
-            if (valueNode == null || valueNode.isNull()) {
-                throw new IllegalStateException("Could not find field " + fieldName + " in response: " + json);
-            }
-            return valueNode.asText();
-        } catch (Exception ex) {
-            throw new IllegalStateException("Could not parse field " + fieldName + " in response: " + json, ex);
-        }
-    }
 }
+

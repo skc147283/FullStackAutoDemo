@@ -1,13 +1,13 @@
 package com.interview.wealthapi;
 
-import static org.testng.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.interview.wealthapi.domain.RiskProfile;
 import com.interview.wealthapi.service.PortfolioService;
 import java.util.Map;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
-public class PortfolioServiceTestNg {
+public class PortfolioServiceTest {
 
     @Test
     public void shouldProvideAggressiveTargetAllocation() {

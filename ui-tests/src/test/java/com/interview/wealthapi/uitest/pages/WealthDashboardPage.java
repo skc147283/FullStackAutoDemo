@@ -50,7 +50,7 @@ public class WealthDashboardPage extends BasePage {
     public String createCustomer(String name, String email, String risk) {
         type(CUSTOMER_NAME, name);
         type(CUSTOMER_EMAIL, email);
-        selectByValue(CUSTOMER_RISK, risk);
+        selectByValue(CUSTOMER_RISK, normalizeRiskProfile(risk));
         click(CREATE_CUSTOMER);
         return nonEmptyText(CUSTOMER_STATUS);
     }
@@ -91,5 +91,17 @@ public class WealthDashboardPage extends BasePage {
         type(REBALANCE_CUSTOMER_ID, customerId);
         click(REBALANCE_BTN);
         return nonEmptyText(REBALANCE_STATUS);
+    }
+
+    private String normalizeRiskProfile(String risk) {
+        if (risk == null || risk.isBlank()) {
+            return "BALANCED";
+        }
+
+        String normalized = risk.trim().toUpperCase();
+        if ("GROWTH".equals(normalized)) {
+            return "AGGRESSIVE";
+        }
+        return normalized;
     }
 }

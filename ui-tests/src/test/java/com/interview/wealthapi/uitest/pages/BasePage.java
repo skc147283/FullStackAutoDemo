@@ -2,8 +2,10 @@ package com.interview.wealthapi.uitest.pages;
 
 import java.time.Duration;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -18,23 +20,59 @@ public abstract class BasePage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
+    protected WebElement waitVisibleFluent(By locator) {
+        return new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(12))
+                .pollingEvery(Duration.ofMillis(200))
+                .ignoring(NoSuchElementException.class)
+                .until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    protected WebElement waitClickableFluent(By locator) {
+        return new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(12))
+                .pollingEvery(Duration.ofMillis(200))
+                .ignoring(NoSuchElementException.class)
+                .until(ExpectedConditions.elementToBeClickable(locator));
+    }
+
+    protected WebElement waitPresentFluent(By locator) {
+        return new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(12))
+                .pollingEvery(Duration.ofMillis(200))
+                .ignoring(NoSuchElementException.class)
+                .until(ExpectedConditions.presenceOfElementLocated(locator));
+    }
+
     protected void type(By locator, String value) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        WebElement input = waitVisibleFluent(locator);
         input.clear();
         input.sendKeys(value);
     }
 
     protected void click(By locator) {
-        wait.until(ExpectedConditions.elementToBeClickable(locator)).click();
+        waitClickableFluent(locator).click();
     }
 
     protected void selectByValue(By locator, String value) {
-        WebElement selectElement = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        WebElement selectElement = waitVisibleFluent(locator);
         new Select(selectElement).selectByValue(value);
     }
 
+    protected void selectByValueOrVisibleText(By locator, String option) {
+        WebElement selectElement = waitVisibleFluent(locator);
+        Select select = new Select(selectElement);
+        try {
+            select.selectByValue(option);
+            return;
+        } catch (NoSuchElementException ignored) {
+            // Fall back to visible text matching.
+        }
+        select.selectByVisibleText(option);
+    }
+
     protected String text(By locator) {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).getText();
+        return waitVisibleFluent(locator).getText();
     }
 
     protected String nonEmptyText(By locator) {
@@ -49,7 +87,22 @@ public abstract class BasePage {
 
     public boolean isElementVisible(By locator) {
         try {
-            return wait.until(ExpectedConditions.visibilityOfElementLocated(locator)).isDisplayed();
+            return waitVisibleFluent(locator).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean waitForTextContains(By locator, String token) {
+        try {
+            return new FluentWait<>(driver)
+                    .withTimeout(Duration.ofSeconds(12))
+                    .pollingEvery(Duration.ofMillis(200))
+                    .ignoring(NoSuchElementException.class)
+                    .until(d -> {
+                        String value = d.findElement(locator).getText();
+                        return value != null && value.contains(token);
+                    });
         } catch (Exception e) {
             return false;
         }

@@ -207,12 +207,66 @@ mvn -Pdb-tests verify
 - **GitHub Actions + Docker Hub + Render/Fly**: good CI/CD story for interviews
 - **Local Kubernetes with kind + Argo CD** (advanced demo)
 
+## Deploy on Render (free tier friendly)
+
+This repository already contains [render.yaml](render.yaml) and a Docker image build definition in [Dockerfile](Dockerfile).
+
+### 1) Push code to GitHub
+
+Render pulls from your repository, so make sure latest changes are pushed.
+
+### 2) Create service from Blueprint
+
+1. Go to Render dashboard.
+2. Choose New -> Blueprint.
+3. Select your repository.
+4. Render will detect [render.yaml](render.yaml).
+5. Create the service.
+
+After deployment, Render gives you a URL like:
+
+- https://wealth-api-demo.onrender.com
+
+### 3) Verify deployed app
+
+Open:
+
+- Health: https://<your-render-url>/actuator/health
+- Swagger: https://<your-render-url>/swagger-ui.html
+
+### 4) Run UI E2E tests against deployed QA/SIT app
+
+Run smoke + sanity in headless mode against deployed URL:
+
+```bash
+mvn -pl ui-tests verify \
+  -Dit.test=SmokeUiIT,SanityUiIT \
+  -Dui.headless=true \
+  -Dui.base-url=https://<your-render-url>
+```
+
+Run only smoke for quick post-deploy validation:
+
+```bash
+mvn -pl ui-tests verify \
+  -Dit.test=SmokeUiIT \
+  -Dui.headless=true \
+  -Dui.base-url=https://<your-render-url>
+```
+
+Generate Allure report for deployed run:
+
+```bash
+mvn -pl ui-tests allure:report
+```
+
 ## Host with GitHub Actions + Docker Hub + Render/Fly
 
 This repository now includes:
 
 - GitHub Actions CI for tests: `.github/workflows/ci.yml`
 - GitHub Actions Docker publish/deploy pipeline: `.github/workflows/docker-deploy.yml`
+- GitHub Actions Render deploy + smoke E2E pipeline: `.github/workflows/render-smoke-e2e.yml`
 - Render service blueprint: `render.yaml`
 - Fly app config: `fly.toml`
 
@@ -229,6 +283,7 @@ In GitHub repo settings -> Secrets and variables -> Actions, add:
 - `DOCKERHUB_USERNAME`: your Docker Hub username
 - `DOCKERHUB_TOKEN`: Docker Hub access token (not password)
 - `RENDER_DEPLOY_HOOK_URL`: optional Render deploy hook URL
+- `RENDER_BASE_URL`: deployed Render app base URL (for post-deploy smoke E2E), e.g. `https://wealth-api-demo.onrender.com`
 - `FLY_API_TOKEN`: optional Fly personal access token
 
 ### 3) Docker image publish flow

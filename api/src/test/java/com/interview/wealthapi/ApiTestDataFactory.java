@@ -10,7 +10,7 @@ final class ApiTestDataFactory {
     }
 
     static String uniqueEmail(String prefix) {
-        return prefix + "." + UUID.randomUUID() + "@example.com";
+        return prefix + "." + System.currentTimeMillis() + "@qa.internal";
     }
 
     static Map<String, Object> customerPayload(String email, String riskProfile) {

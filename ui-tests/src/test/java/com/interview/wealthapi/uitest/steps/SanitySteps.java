@@ -1,68 +1,26 @@
 package com.interview.wealthapi.uitest.steps;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interview.wealthapi.uitest.pages.WealthDashboardPage;
 import com.interview.wealthapi.uitest.support.UiScenarioContext;
 import com.interview.wealthapi.uitest.support.WebDriverFactory;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.junit.jupiter.api.Assertions;
-import org.openqa.selenium.By;
-
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 
 /**
- * Step definitions for @smoke and @sanity scenarios.
- * Each scenario gets a fresh instance (Cucumber default object lifecycle).
+ * Step definitions for @sanity scenarios.
  */
-public class SmokeAndSanitySteps {
+public class SanitySteps extends SharedUiSteps {
 
     private final WealthDashboardPage page = new WealthDashboardPage(WebDriverFactory.getOrCreate());
     private final UiScenarioContext context = new UiScenarioContext();
     private final String baseUrl = System.getProperty("ui.base-url", "http://localhost:8080");
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /** Latest observable response from the most recent action step. */
     private String lastResponse;
-
-    // ─────────────────────────── Smoke steps ───────────────────────────────
-
-    @Given("I navigate to the wealth management UI")
-    public void navigateToUi() {
-        page.open(baseUrl);
-    }
-
-    @Then("the page title should contain {string}")
-    public void pageTitleContains(String expected) {
-        String title = page.getPageTitle();
-        Assertions.assertTrue(title.contains(expected),
-                "Page title should contain '" + expected + "' but was: " + title);
-    }
-
-    @Then("the customer creation form should be visible")
-    public void customerFormVisible() {
-        Assertions.assertTrue(page.isElementVisible(By.id("customerName")),
-                "customerName field should be visible");
-        Assertions.assertTrue(page.isElementVisible(By.id("createCustomerBtn")),
-                "createCustomerBtn should be visible");
-    }
-
-    @When("I submit a new customer with name {string} and risk {string}")
-    public void submitNewCustomer(String name, String risk) {
-        String email = "smoke." + UUID.randomUUID() + "@example.com";
-        lastResponse = page.createCustomer(name, email, risk);
-    }
-
-    @Then("the customer response should contain a valid ID")
-    public void customerResponseHasId() {
-        Assertions.assertTrue(lastResponse.contains("\"id\""),
-                "Customer response should contain 'id' field: " + lastResponse);
-    }
-
-    // ─────────────────────────── Sanity steps ──────────────────────────────
 
     @Given("I open the app for a sanity test")
     public void openAppForSanity() {
@@ -71,7 +29,7 @@ public class SmokeAndSanitySteps {
 
     @When("I onboard a new {string} risk customer")
     public void onboardCustomerWithRisk(String risk) {
-        String email = "sanity." + UUID.randomUUID() + "@example.com";
+        String email = "test.sanity." + System.currentTimeMillis() + "@qa.internal";
         String customerResponse = page.createCustomer("Sanity Test User", email, risk);
         context.setCustomerId(extractField(customerResponse, "id"));
     }
@@ -135,22 +93,5 @@ public class SmokeAndSanitySteps {
     public void transferResponseIndicatesSuccess() {
         Assertions.assertTrue(lastResponse.contains("Transfer successful"),
                 "Transfer response should say 'Transfer successful': " + lastResponse);
-    }
-
-    // ─────────────────────────── Helpers ───────────────────────────────────
-
-    private String extractField(String json, String fieldName) {
-        try {
-            JsonNode node = objectMapper.readTree(json);
-            JsonNode value = node.get(fieldName);
-            if (value == null || value.isNull()) {
-                throw new IllegalStateException(
-                        "Field '" + fieldName + "' not found in response: " + json);
-            }
-            return value.asText();
-        } catch (Exception ex) {
-            throw new IllegalStateException(
-                    "Cannot parse field '" + fieldName + "' from: " + json, ex);
-        }
     }
 }
