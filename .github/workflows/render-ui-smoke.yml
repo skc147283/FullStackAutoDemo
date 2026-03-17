@@ -1,0 +1,57 @@
+name: Render UI Smoke
+
+on:
+  workflow_run:
+    workflows: ["Docker Publish and Deploy"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ui-availability:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate base URL secret
+        env:
+          RENDER_BASE_URL: ${{ secrets.RENDER_BASE_URL }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${RENDER_BASE_URL}" ]]; then
+            echo "Missing secret: RENDER_BASE_URL"
+            echo "Set GitHub Actions secret RENDER_BASE_URL to your deployed service URL."
+            exit 1
+          fi
+
+      - name: Smoke check API and UI endpoints
+        env:
+          RENDER_BASE_URL: ${{ secrets.RENDER_BASE_URL }}
+        run: |
+          set -euo pipefail
+          BASE="${RENDER_BASE_URL%/}"
+          URLS=(
+            "${BASE}/actuator/health"
+            "${BASE}/index.html"
+            "${BASE}/dashboard.html"
+          )
+
+          for url in "${URLS[@]}"; do
+            echo "Checking ${url}"
+            code=$(curl -sS -o /tmp/resp.txt -w "%{http_code}" "$url" || true)
+            if [[ "$code" != "200" ]]; then
+              echo "Endpoint failed: ${url} (HTTP ${code})"
+              cat /tmp/resp.txt || true
+              exit 1
+            fi
+          done
+
+      - name: Verify health payload contains UP
+        env:
+          RENDER_BASE_URL: ${{ secrets.RENDER_BASE_URL }}
+        run: |
+          set -euo pipefail
+          curl -sS "${RENDER_BASE_URL%/}/actuator/health" | tee health.json
+          grep -q '"status"[[:space:]]*:[[:space:]]*"UP"' health.json

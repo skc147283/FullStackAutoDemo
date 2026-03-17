@@ -233,6 +233,8 @@ Open:
 
 - Health: https://<your-render-url>/actuator/health
 - Swagger: https://<your-render-url>/swagger-ui.html
+- UI home: https://<your-render-url>/index.html
+- UI dashboard: https://<your-render-url>/dashboard.html
 
 ### 4) Run UI E2E tests against deployed QA/SIT app
 
@@ -267,6 +269,7 @@ This repository now includes:
 - GitHub Actions CI for tests: `.github/workflows/ci.yml`
 - GitHub Actions Docker publish/deploy pipeline: `.github/workflows/docker-deploy.yml`
 - GitHub Actions Render deploy + smoke E2E pipeline: `.github/workflows/render-smoke-e2e.yml`
+- GitHub Actions Render UI smoke pipeline: `.github/workflows/render-ui-smoke.yml`
 - Render service blueprint: `render.yaml`
 - Fly app config: `fly.toml`
 
@@ -325,6 +328,38 @@ fly auth login
 
 - Render URL example: `https://<your-render-service>.onrender.com/swagger-ui.html`
 - Fly URL example: `https://<your-fly-app>.fly.dev/swagger-ui.html`
+
+### 7) Verify hosted UI app
+
+- Render URL example: `https://<your-render-service>.onrender.com/index.html`
+- Render dashboard URL example: `https://<your-render-service>.onrender.com/dashboard.html`
+
+The workflow `.github/workflows/render-ui-smoke.yml` can be run manually or after Docker publish to verify these endpoints.
+
+## Free Jenkins + CI/CD setup
+
+If you want Jenkins with zero hosting cost, run it locally using Docker Compose:
+
+```bash
+docker compose -f docker-compose.jenkins.yml up -d
+```
+
+Then open `http://localhost:8081` and complete setup.
+
+Recommended Jenkins setup for this repo:
+
+1. Install suggested plugins: Pipeline, Git, Maven Integration, JUnit.
+2. Configure tools in Jenkins Global Tool Configuration:
+  - JDK name: `jdk17`
+  - Maven name: `maven3`
+3. Create a Pipeline job from this repository.
+4. Use `Jenkinsfile` in repo root.
+
+Free CI/CD recommendation for interview demos:
+
+1. Keep GitHub Actions as primary cloud CI/CD (free minutes).
+2. Use local Jenkins only for showcasing classic Jenkins pipeline execution.
+3. Trigger Render deploy from GitHub Actions and verify UI/API with smoke workflows.
 
 Use these links in interview demos to show cloud-hosted APIs and CI/CD automation.
 
