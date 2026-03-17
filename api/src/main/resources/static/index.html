@@ -138,10 +138,39 @@
       border-radius: 10px;
       border: 1px dashed #bfd7d9;
       padding: 8px;
-      font-family: "IBM Plex Mono", Menlo, monospace;
-      font-size: 0.76rem;
+      font-size: 0.84rem;
       white-space: pre-wrap;
       background: #fbfefe;
+    }
+
+    .status-main {
+      font-weight: 600;
+      line-height: 1.35;
+    }
+
+    .status-sub {
+      margin-top: 4px;
+      font-size: 0.78rem;
+      opacity: 0.92;
+    }
+
+    .debug-details {
+      margin-top: 8px;
+      border-top: 1px dashed rgba(11, 26, 36, 0.22);
+      padding-top: 6px;
+      font-family: "IBM Plex Mono", Menlo, monospace;
+      font-size: 0.74rem;
+    }
+
+    .debug-details summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .debug-details pre {
+      margin-top: 6px;
+      overflow-x: auto;
+      white-space: pre;
     }
 
     .status.ok {
@@ -248,30 +277,171 @@
   };
 
   const byId = (id) => document.getElementById(id);
+  const params = new URLSearchParams(window.location.search);
+  const DEVELOPER_MODE = params.get("dev") === "1" || localStorage.getItem("wealthflow.devMode") === "true";
 
-  function writeStatus(elementId, payload, ok) {
+  const ACTION_TEMPLATES = {
+    onboarding: {
+      success: (data) => ({
+        title: "Customer created successfully.",
+        subtitle: data && data.id
+          ? `Customer ID ${data.id} is now ready for account setup.`
+          : "You can now proceed to account opening."
+      }),
+      failureFallback: "We could not create the customer profile. Please review your details and try again.",
+      failureByCode: {
+        INVALID_CUSTOMER_NAME: "Please enter a valid full name.",
+        INVALID_EMAIL: "Please enter a valid email address.",
+        INVALID_RISK_PROFILE: "Please choose a valid risk profile.",
+        VALIDATION_ERROR: "Some customer details are missing or invalid."
+      }
+    },
+    account: {
+      success: (data) => ({
+        title: "Account created successfully.",
+        subtitle: data && data.id
+          ? `Account ID ${data.id} has been opened and is ready for transactions.`
+          : "The account is ready for transactions."
+      }),
+      failureFallback: "We could not open the account. Please verify the customer and opening balance.",
+      failureByCode: {
+        CUSTOMER_NOT_FOUND: "We could not find this customer. Please create or select a valid customer first.",
+        NEGATIVE_OPENING_BALANCE: "Opening balance cannot be negative.",
+        INVALID_AMOUNT: "Opening balance must be greater than zero."
+      }
+    },
+    deposit: {
+      success: (data) => ({
+        title: "Deposit completed.",
+        subtitle: data && data.balance !== undefined
+          ? `Your updated balance is ${data.balance}.`
+          : "Funds were deposited successfully."
+      }),
+      failureFallback: "We could not process the deposit. Check account information and amount.",
+      failureByCode: {
+        ACCOUNT_NOT_FOUND: "The selected account was not found.",
+        INVALID_AMOUNT: "Deposit amount must be greater than zero.",
+        VALIDATION_ERROR: "Deposit details are incomplete or invalid."
+      }
+    },
+    transfer: {
+      success: (data) => ({
+        title: "Transfer completed.",
+        subtitle: data && data.transactionId
+          ? `Transaction ${data.transactionId} was processed successfully.`
+          : "Funds were transferred successfully."
+      }),
+      failureFallback: "We could not complete the transfer. Please review the account details and amount.",
+      failureByCode: {
+        SAME_ACCOUNT_TRANSFER: "Source and destination accounts must be different.",
+        INSUFFICIENT_BALANCE: "Transfer amount exceeds available balance.",
+        CURRENCY_MISMATCH: "Accounts must use the same currency for transfer.",
+        ACCOUNT_NOT_FOUND: "One or both accounts could not be found.",
+        INVALID_AMOUNT: "Transfer amount must be greater than zero.",
+        VALIDATION_ERROR: "Transfer details are incomplete or invalid."
+      }
+    }
+  };
+
+  function toJson(value) {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch {
+      return String(value);
+    }
+  }
+
+  function renderStatus(elementId, ok, title, subtitle, rawPayload) {
     const el = byId(elementId);
-    const text = typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
-    el.textContent = text;
+    const payloadForDebug = rawPayload && rawPayload.data ? rawPayload.data : rawPayload;
+    el.setAttribute("data-raw-payload", toJson(payloadForDebug));
+    el.innerHTML = "";
+
+    const main = document.createElement("div");
+    main.className = "status-main";
+    main.textContent = title;
+    el.appendChild(main);
+
+    if (subtitle) {
+      const sub = document.createElement("div");
+      sub.className = "status-sub";
+      sub.textContent = subtitle;
+      el.appendChild(sub);
+    }
+
+    if (DEVELOPER_MODE) {
+      const details = document.createElement("details");
+      details.className = "debug-details";
+      const summary = document.createElement("summary");
+      summary.textContent = "Debug details";
+      const pre = document.createElement("pre");
+      pre.textContent = toJson(rawPayload);
+      details.appendChild(summary);
+      details.appendChild(pre);
+      el.appendChild(details);
+    }
+
     el.classList.remove("ok", "error");
     el.classList.add(ok ? "ok" : "error");
   }
 
-  async function apiCall(path, method, body) {
-    const response = await fetch(path, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: body ? JSON.stringify(body) : undefined
-    });
+  function resolveErrorCode(result) {
+    const data = result && result.data ? result.data : {};
+    return data.errorCode || data.code || (result.status === 0 ? "NETWORK_ERROR" : `HTTP_${result.status}`);
+  }
 
-    let data;
-    try {
-      data = await response.json();
-    } catch {
-      data = { message: await response.text() };
+  function renderActionResult(actionKey, statusElementId, result) {
+    const template = ACTION_TEMPLATES[actionKey];
+    const errorCode = resolveErrorCode(result);
+    const data = result.data || {};
+
+    if (result.ok) {
+      const message = template.success(data);
+      renderStatus(statusElementId, true, message.title, message.subtitle, result);
+      console.info(`[${actionKey}] success`, result);
+      return;
     }
 
-    return { ok: response.ok, status: response.status, data };
+    const friendlyMessage = template.failureByCode[errorCode]
+      || template.failureByCode[data.code]
+      || template.failureFallback;
+
+    const subtitle = DEVELOPER_MODE
+      ? `Error code: ${errorCode}`
+      : "Please review your input and try again.";
+
+    renderStatus(statusElementId, false, friendlyMessage, subtitle, result);
+    console.warn(`[${actionKey}] failure`, result);
+  }
+
+  async function apiCall(path, method, body) {
+    try {
+      const response = await fetch(path, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: body ? JSON.stringify(body) : undefined
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = { message: await response.text() };
+      }
+
+      return { ok: response.ok, status: response.status, data };
+    } catch (error) {
+      return {
+        ok: false,
+        status: 0,
+        data: {
+          code: "NETWORK_ERROR",
+          errorCode: "NETWORK_ERROR",
+          message: "Network request failed"
+        },
+        networkError: String(error)
+      };
+    }
   }
 
   byId("createCustomerBtn").addEventListener("click", async () => {
@@ -282,7 +452,7 @@
     };
 
     const result = await apiCall("/api/v1/customers", "POST", payload);
-    writeStatus("customerStatus", result.data, result.ok);
+    renderActionResult("onboarding", "customerStatus", result);
     if (result.ok && result.data.id) {
       state.customerId = result.data.id;
       byId("accountCustomerId").value = state.customerId;
@@ -299,7 +469,7 @@
     };
 
     const result = await apiCall("/api/v1/accounts", "POST", payload);
-    writeStatus("accountStatus", result.data, result.ok);
+    renderActionResult("account", "accountStatus", result);
     if (result.ok && result.data.id) {
       state.lastAccountId = result.data.id;
       if (!state.firstAccountId) {
@@ -322,7 +492,7 @@
     };
 
     const result = await apiCall(`/api/v1/accounts/${accountId}/deposit`, "POST", payload);
-    writeStatus("depositStatus", result.data, result.ok);
+    renderActionResult("deposit", "depositStatus", result);
   });
 
   byId("transferBtn").addEventListener("click", async () => {
@@ -334,7 +504,7 @@
     };
 
     const result = await apiCall("/api/v1/accounts/transfer", "POST", payload);
-    writeStatus("transferStatus", result.data, result.ok);
+    renderActionResult("transfer", "transferStatus", result);
   });
 
   byId("holdingBtn").addEventListener("click", async () => {
@@ -345,13 +515,31 @@
     };
 
     const result = await apiCall(`/api/v1/portfolios/${customerId}/holdings`, "POST", payload);
-    writeStatus("holdingStatus", result.data, result.ok);
+    renderStatus(
+      "holdingStatus",
+      result.ok,
+      result.ok ? "Portfolio holding added." : "Could not add portfolio holding.",
+      result.ok ? "The holding has been saved successfully." : "Please verify customer, symbol, and market value.",
+      result
+    );
+    if (!result.ok) {
+      console.warn("[holding] failure", result);
+    }
   });
 
   byId("rebalanceBtn").addEventListener("click", async () => {
     const customerId = byId("rebalanceCustomerId").value;
     const result = await apiCall(`/api/v1/portfolios/${customerId}/rebalance-preview`, "POST");
-    writeStatus("rebalanceStatus", result.data, result.ok);
+    renderStatus(
+      "rebalanceStatus",
+      result.ok,
+      result.ok ? "Rebalance preview generated." : "Could not generate rebalance preview.",
+      result.ok ? "Review the suggested allocation mix below." : "Please verify customer and try again.",
+      result
+    );
+    if (!result.ok) {
+      console.warn("[rebalance] failure", result);
+    }
   });
 </script>
 </body>

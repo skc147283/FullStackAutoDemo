@@ -73,11 +73,20 @@ public class AdvancedDashboardPage extends BasePage {
     }
 
     private String waitForLatestAlertText() {
-        new org.openqa.selenium.support.ui.FluentWait<>(driver)
-                .withTimeout(java.time.Duration.ofSeconds(12))
-                .pollingEvery(java.time.Duration.ofMillis(200))
-                .ignoring(org.openqa.selenium.NoSuchElementException.class)
-                .until(d -> !d.findElements(LATEST_ALERT).isEmpty());
-        return driver.findElement(LATEST_ALERT).getText();
+        org.openqa.selenium.support.ui.FluentWait<WebDriver> waitForAlert =
+                new org.openqa.selenium.support.ui.FluentWait<>(driver)
+                        .withTimeout(java.time.Duration.ofSeconds(12))
+                        .pollingEvery(java.time.Duration.ofMillis(200))
+                        .ignoring(org.openqa.selenium.NoSuchElementException.class);
+
+        waitForAlert.until(d -> {
+            Object text = ((org.openqa.selenium.JavascriptExecutor) d)
+                    .executeScript("const el = document.querySelector('#alertContainer .alert:last-child'); return el ? (el.textContent || '').trim() : ''; ");
+            return text != null && !text.toString().isBlank();
+        });
+
+        Object finalText = ((org.openqa.selenium.JavascriptExecutor) driver)
+                .executeScript("const el = document.querySelector('#alertContainer .alert:last-child'); return el ? (el.textContent || '').trim() : ''; ");
+        return finalText == null ? "" : finalText.toString();
     }
 }

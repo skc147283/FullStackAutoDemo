@@ -78,6 +78,10 @@ public abstract class BasePage {
     protected String nonEmptyText(By locator) {
         WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
         wait.until(driver -> !element.getText().isBlank());
+        String rawPayload = element.getAttribute("data-raw-payload");
+        if (rawPayload != null && !rawPayload.isBlank()) {
+            return rawPayload;
+        }
         return element.getText();
     }
 

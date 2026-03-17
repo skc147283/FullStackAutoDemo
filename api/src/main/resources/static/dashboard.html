@@ -936,6 +936,136 @@
     </div>
 
     <script>
+        const params = new URLSearchParams(window.location.search);
+        const DEVELOPER_MODE = params.get('dev') === '1' || localStorage.getItem('wealthflow.devMode') === 'true';
+
+        const ALERT_TEMPLATES = {
+            upload: {
+                success: 'File uploaded successfully.',
+                failureFallback: 'We could not upload the file. Please check format and try again.',
+                failureByCode: {
+                    INVALID_FILE_TYPE: 'Only CSV files are supported.',
+                    FILE_TOO_LARGE: 'File is too large. Please upload a file under 10MB.',
+                    NETWORK_ERROR: 'Network issue while uploading. Please retry.'
+                }
+            },
+            deposit: {
+                success: (data) => `Deposit of $${data.amount} was processed successfully.`,
+                failureFallback: 'We could not process this deposit. Please verify amount and account.',
+                failureByCode: {
+                    INVALID_AMOUNT: 'Deposit amount must be greater than zero.',
+                    ACCOUNT_NOT_FOUND: 'Selected account was not found.',
+                    NETWORK_ERROR: 'Network issue while processing deposit. Please retry.'
+                }
+            },
+            transfer: {
+                success: (data) => `Transfer of $${data.amount} completed successfully.`,
+                failureFallback: 'We could not complete this transfer. Please review account details and amount.',
+                failureByCode: {
+                    SAME_ACCOUNT_TRANSFER: 'Source and destination accounts must be different.',
+                    INSUFFICIENT_BALANCE: 'Transfer amount exceeds available balance.',
+                    CURRENCY_MISMATCH: 'Accounts must use the same currency for transfer.',
+                    ACCOUNT_NOT_FOUND: 'One or more accounts could not be found.',
+                    INVALID_AMOUNT: 'Transfer amount must be greater than zero.',
+                    NETWORK_ERROR: 'Network issue while processing transfer. Please retry.'
+                }
+            },
+            rebalance: {
+                success: (data) => `Portfolio rebalanced to ${data.profile} allocation.`,
+                failureFallback: 'We could not rebalance the portfolio right now. Please retry.',
+                failureByCode: {
+                    CUSTOMER_NOT_FOUND: 'Customer profile was not found.',
+                    NETWORK_ERROR: 'Network issue while rebalancing. Please retry.'
+                }
+            },
+            report: {
+                success: (data) => `Report generated successfully: ${data.label}.`,
+                failureFallback: 'Report generation failed. Please try again.',
+                failureByCode: {
+                    INVALID_INPUT: 'Please select a valid report type and date range.',
+                    NETWORK_ERROR: 'Network issue while generating report. Please retry.'
+                }
+            },
+            accountCreate: {
+                success: (data) => `New ${data.accountType} account created successfully.`,
+                failureFallback: 'We could not create the account. Please review account details.',
+                failureByCode: {
+                    INVALID_INPUT: 'Please complete required account fields.',
+                    NETWORK_ERROR: 'Network issue while creating account. Please retry.'
+                }
+            },
+            accountSave: {
+                success: 'Account details saved successfully.',
+                failureFallback: 'We could not save account details. Please try again.',
+                failureByCode: {
+                    INVALID_INPUT: 'Please verify account form values.',
+                    NETWORK_ERROR: 'Network issue while saving account details. Please retry.'
+                }
+            },
+            reportDownload: {
+                success: (data) => `${data.label} report download started.`,
+                failureFallback: 'Could not start report download. Please retry.',
+                failureByCode: {
+                    NETWORK_ERROR: 'Network issue while starting download. Please retry.'
+                }
+            },
+            logout: {
+                success: 'Logging out...',
+                failureFallback: 'Could not complete logout right now.',
+                failureByCode: {}
+            }
+        };
+
+        function normalizeResult(payload) {
+            if (!payload || typeof payload !== 'object') {
+                return { ok: true, data: {}, errorCode: null };
+            }
+            const data = payload.data || {};
+            const code = data.errorCode || data.code || payload.errorCode || null;
+            return {
+                ok: payload.ok !== false,
+                data,
+                errorCode: code
+            };
+        }
+
+        function resolveTemplateMessage(action, result) {
+            const template = ALERT_TEMPLATES[action];
+            if (!template) {
+                return result.ok ? 'Operation completed successfully.' : 'Operation failed. Please try again.';
+            }
+
+            if (result.ok) {
+                return typeof template.success === 'function' ? template.success(result.data) : template.success;
+            }
+
+            if (result.errorCode && template.failureByCode[result.errorCode]) {
+                return template.failureByCode[result.errorCode];
+            }
+
+            return template.failureFallback;
+        }
+
+        function toJson(value) {
+            try {
+                return JSON.stringify(value, null, 2);
+            } catch {
+                return String(value);
+            }
+        }
+
+        function showMappedAlert(action, payload, typeWhenSuccess = 'success') {
+            const result = normalizeResult(payload);
+            const message = resolveTemplateMessage(action, result);
+            const type = result.ok ? typeWhenSuccess : 'error';
+            showAlert(message, type, payload);
+            if (result.ok) {
+                console.info(`[dashboard:${action}] success`, payload);
+            } else {
+                console.warn(`[dashboard:${action}] failure`, payload);
+            }
+        }
+
         // Tab switching
         function switchTab(tabName) {
             const tabs = document.querySelectorAll('.tab-content');
@@ -972,11 +1102,32 @@
         }
 
         // Alert function
-        function showAlert(message, type = 'success') {
+        function showAlert(message, type = 'success', debugPayload = null) {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
             alert.className = `alert alert-${type} show`;
-            alert.textContent = message;
+            const messageNode = document.createElement('div');
+            messageNode.textContent = message;
+            alert.appendChild(messageNode);
+
+            if (DEVELOPER_MODE && debugPayload) {
+                const details = document.createElement('details');
+                details.style.marginTop = '8px';
+                const summary = document.createElement('summary');
+                summary.textContent = 'Debug details';
+                summary.style.cursor = 'pointer';
+                summary.style.fontWeight = '600';
+
+                const pre = document.createElement('pre');
+                pre.textContent = toJson(debugPayload);
+                pre.style.marginTop = '6px';
+                pre.style.fontSize = '12px';
+                pre.style.whiteSpace = 'pre-wrap';
+
+                details.appendChild(summary);
+                details.appendChild(pre);
+                alert.appendChild(details);
+            }
             alertContainer.appendChild(alert);
             
             setTimeout(() => {
@@ -1014,7 +1165,27 @@
         }
 
         function uploadCSV() {
-            showAlert('✅ File uploaded successfully!', 'success');
+            const selectedName = document.getElementById('selectedFileName').textContent || '';
+            const selectedSizeKb = Number((document.getElementById('selectedFileSize').textContent || '0').replace(' KB', ''));
+            if (!selectedName.toLowerCase().endsWith('.csv')) {
+                showMappedAlert('upload', {
+                    ok: false,
+                    data: { errorCode: 'INVALID_FILE_TYPE' }
+                });
+                return;
+            }
+            if (selectedSizeKb > 10240) {
+                showMappedAlert('upload', {
+                    ok: false,
+                    data: { errorCode: 'FILE_TOO_LARGE' }
+                });
+                return;
+            }
+
+            showMappedAlert('upload', {
+                ok: true,
+                data: { fileName: selectedName, sizeKb: selectedSizeKb }
+            });
             document.getElementById('uploadProgress').style.display = 'block';
             let progress = 0;
             const interval = setInterval(() => {
@@ -1028,71 +1199,123 @@
         }
 
         function downloadSampleCSV() {
-            showAlert('📥 Sample CSV downloaded!', 'success');
+            showAlert('Sample CSV download started.', 'success');
         }
 
         function downloadReport(type, reportType = '') {
-            showAlert(`📥 ${type.toUpperCase()} report download started!`, 'success');
+            showMappedAlert('reportDownload', {
+                ok: true,
+                data: { label: `${type.toUpperCase()} ${reportType || 'dashboard'}`.trim() }
+            });
         }
 
         // Form submission handlers
         function processDeposit(event) {
             event.preventDefault();
             const amount = document.getElementById('depositAmount').value;
-            showAlert(`✅ Deposit of $${amount} processed successfully!`, 'success');
+            const numericAmount = Number(amount);
+            if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+                showMappedAlert('deposit', {
+                    ok: false,
+                    data: { errorCode: 'INVALID_AMOUNT' }
+                });
+                return;
+            }
+
+            showMappedAlert('deposit', {
+                ok: true,
+                data: { amount: numericAmount }
+            });
             closeModal('depositModal');
         }
 
         function processTransfer(event) {
             event.preventDefault();
             const amount = document.getElementById('transferAmount').value;
-            showAlert(`✅ Transfer of $${amount} completed successfully!`, 'success');
+            const numericAmount = Number(amount);
+            if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+                showMappedAlert('transfer', {
+                    ok: false,
+                    data: { errorCode: 'INVALID_AMOUNT' }
+                });
+                return;
+            }
+
+            showMappedAlert('transfer', {
+                ok: true,
+                data: { amount: numericAmount }
+            });
             closeModal('transferModal');
         }
 
         function processRebalance(event) {
             event.preventDefault();
             const profile = document.getElementById('riskProfile').value;
-            showAlert(`✅ Portfolio rebalanced to ${profile} allocation!`, 'success');
+            showMappedAlert('rebalance', {
+                ok: true,
+                data: { profile }
+            });
             closeModal('rebalanceModal');
         }
 
         function generateReport(event) {
             event.preventDefault();
-            showAlert('✅ Report generated successfully!', 'success');
+            const reportType = document.getElementById('reportType').value;
+            const dateRange = document.getElementById('dateRange').value;
+            if (!reportType) {
+                showMappedAlert('report', {
+                    ok: false,
+                    data: { errorCode: 'INVALID_INPUT' }
+                });
+                return;
+            }
+            showMappedAlert('report', {
+                ok: true,
+                data: { label: `${reportType} (${dateRange})` }
+            });
         }
 
         function createAccount(event) {
             event.preventDefault();
             const accountType = document.getElementById('newAccountType').value;
-            showAlert(`✅ New ${accountType} account created!`, 'success');
+            if (!accountType) {
+                showMappedAlert('accountCreate', {
+                    ok: false,
+                    data: { errorCode: 'INVALID_INPUT' }
+                });
+                return;
+            }
+            showMappedAlert('accountCreate', {
+                ok: true,
+                data: { accountType }
+            });
             closeModal('newAccountModal');
         }
 
         function saveAccount(event) {
             event.preventDefault();
-            showAlert('✅ Account details saved successfully!', 'success');
+            showMappedAlert('accountSave', { ok: true, data: {} });
         }
 
         function editAccount(accountId) {
-            showAlert(`🔧 Editing account ${accountId}...`, 'info');
+            showAlert(`Editing account ${accountId}.`, 'info');
         }
 
         function deleteAccount(accountId) {
             if (confirm(`Are you sure you want to delete account ${accountId}?`)) {
-                showAlert(`🗑️ Account ${accountId} deleted!`, 'success');
+                showAlert(`Account ${accountId} deleted.`, 'success');
             }
         }
 
         function saveSettings(event) {
             event.preventDefault();
-            showAlert('✅ Settings saved successfully!', 'success');
+            showAlert('Settings saved successfully.', 'success');
             closeModal('settingsModal');
         }
 
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
-                showAlert('👋 Logging out...', 'warning');
+                showMappedAlert('logout', { ok: true, data: {} }, 'warning');
                 window.location.href = '/';
             }
         }

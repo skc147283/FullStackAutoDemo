@@ -48,7 +48,7 @@ pipeline {
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/failsafe-reports/*.xml'
+                    junit allowEmptyResults: true, testResults: '**/target/failsafe-reports/TEST-*.xml'
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'ui-tests/target/cucumber-reports/**,ui-tests/target/allure-results/**,ui-tests/target/site/allure-maven-plugin/**'
                 }
             }
