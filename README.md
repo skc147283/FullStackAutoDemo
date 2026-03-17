@@ -125,6 +125,71 @@ Run all tests:
 mvn test
 ```
 
+## API test package
+
+Critical API workflow tests are grouped under:
+
+- `src/test/java/com/interview/wealthapi/apitest`
+
+This package contains end-to-end business flow validation using REST Assured.
+
+## UI application for critical flow
+
+A browser-based operations console is available at:
+
+- `http://localhost:8080/index.html`
+
+It covers the full critical flow:
+
+1. Customer onboarding
+2. Account opening
+3. Deposit
+4. Transfer
+5. Portfolio holding
+6. Rebalance preview
+
+## UI automation: Selenium + BDD Cucumber + POM
+
+UI automation uses:
+
+- Selenium WebDriver 4
+- Cucumber BDD on JUnit Platform
+- Page Object Model classes under `src/test/java/com/interview/wealthapi/uitest/pages`
+
+Run UI tests (visible browser by default on local machines, headless in CI):
+
+```bash
+mvn -Pui-tests verify
+```
+
+Optional runtime properties:
+
+- `-Dui.base-url=http://localhost:8080`
+- `-Dui.headless=true`
+
+VS Code test runs default to the `Visible UI Browser` Java test configuration in `.vscode/settings.json`.
+Switch to `Headless UI Browser` when you want local runs to stay off-screen.
+
+Allure reporting is enabled for UI runs. Generate the HTML report after running UI tests with:
+
+```bash
+mvn -pl ui-tests allure:report
+```
+
+The raw results are written under `ui-tests/target/allure-results` and the generated report is created under `ui-tests/target/site/allure-maven-plugin`.
+
+## Open-source database integration tests
+
+PostgreSQL integration tests run with Testcontainers and are packaged under:
+
+- `src/test/java/com/interview/wealthapi/dbtest`
+
+Run DB tests:
+
+```bash
+mvn -Pdb-tests verify
+```
+
 ## Jenkins CI/CD setup
 
 1. Install Jenkins with JDK 17 and Maven 3 tools configured as:

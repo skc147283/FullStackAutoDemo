@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WealthFlow Control Center</title>
+  <style>
+    :root {
+      --ink: #0b1a24;
+      --sand: #f9f4ea;
+      --gold: #d6a300;
+      --teal: #116466;
+      --mint: #d9efe0;
+      --card: #ffffff;
+      --danger: #9f1d35;
+      --ok: #1f7a3a;
+      --shadow: 0 14px 34px rgba(17, 100, 102, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 20%, rgba(214, 163, 0, 0.17), transparent 35%),
+        radial-gradient(circle at 90% 10%, rgba(17, 100, 102, 0.25), transparent 38%),
+        linear-gradient(130deg, #f5efe0, #e8f5f0 55%, #fef7e7);
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+
+    .hero {
+      border-radius: 22px;
+      padding: 26px;
+      background: linear-gradient(135deg, rgba(11, 26, 36, 0.94), rgba(17, 100, 102, 0.88));
+      color: #fff;
+      box-shadow: var(--shadow);
+      animation: rise 0.5s ease-out;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      letter-spacing: 0.02em;
+    }
+
+    .hero p {
+      margin: 10px 0 0;
+      line-height: 1.45;
+      opacity: 0.92;
+      max-width: 70ch;
+    }
+
+    .grid {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(17, 100, 102, 0.18);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 8px 24px rgba(11, 26, 36, 0.08);
+      opacity: 0;
+      transform: translateY(8px);
+      animation: cardIn 0.45s ease-out forwards;
+    }
+
+    .card:nth-child(2) { animation-delay: 0.06s; }
+    .card:nth-child(3) { animation-delay: 0.12s; }
+    .card:nth-child(4) { animation-delay: 0.18s; }
+    .card:nth-child(5) { animation-delay: 0.24s; }
+    .card:nth-child(6) { animation-delay: 0.30s; }
+
+    h2 {
+      margin: 4px 0 12px;
+      font-size: 1.05rem;
+      border-left: 4px solid var(--gold);
+      padding-left: 8px;
+    }
+
+    .row {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    label {
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    input, select, button {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #bfd7d9;
+      padding: 9px 10px;
+      font-size: 0.94rem;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(17, 100, 102, 0.28);
+      border-color: var(--teal);
+    }
+
+    button {
+      margin-top: 4px;
+      background: linear-gradient(135deg, var(--teal), #0a5b5d);
+      border: none;
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(17, 100, 102, 0.25);
+    }
+
+    .status {
+      margin-top: 8px;
+      min-height: 54px;
+      border-radius: 10px;
+      border: 1px dashed #bfd7d9;
+      padding: 8px;
+      font-family: "IBM Plex Mono", Menlo, monospace;
+      font-size: 0.76rem;
+      white-space: pre-wrap;
+      background: #fbfefe;
+    }
+
+    .status.ok {
+      border-color: rgba(31, 122, 58, 0.55);
+      background: #eefaf1;
+      color: var(--ok);
+    }
+
+    .status.error {
+      border-color: rgba(159, 29, 53, 0.45);
+      background: #fff2f4;
+      color: var(--danger);
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <section class="hero">
+    <h1>WealthFlow Critical Business Console</h1>
+    <p>Drive the complete interview flow in one screen: onboarding, account opening, deposit, transfer, portfolio update, and rebalance guidance.</p>
+    <p style="margin-top: 15px;">
+      <a href="/dashboard.html" style="color: #d9efe0; text-decoration: underline; font-weight: 600;">→ Go to Advanced Dashboard with Reports & File Upload</a>
+    </p>
+  </section>
+
+  <section class="grid">
+    <article class="card">
+      <h2>1. Customer Onboarding</h2>
+      <div class="row"><label for="customerName">Full Name</label><input id="customerName" value="UI Demo User"></div>
+      <div class="row"><label for="customerEmail">Email</label><input id="customerEmail" placeholder="user@example.com"></div>
+      <div class="row">
+        <label for="customerRisk">Risk Profile</label>
+        <select id="customerRisk">
+          <option value="CONSERVATIVE">CONSERVATIVE</option>
+          <option value="BALANCED" selected>BALANCED</option>
+          <option value="AGGRESSIVE">AGGRESSIVE</option>
+        </select>
+      </div>
+      <button id="createCustomerBtn">Create Customer</button>
+      <div id="customerStatus" class="status"></div>
+    </article>
+
+    <article class="card">
+      <h2>2. Account Opening</h2>
+      <div class="row"><label for="accountCustomerId">Customer ID</label><input id="accountCustomerId"></div>
+      <div class="row"><label for="accountOpeningBalance">Opening Balance</label><input id="accountOpeningBalance" value="1000.00"></div>
+      <button id="createAccountBtn">Create Account</button>
+      <div id="accountStatus" class="status"></div>
+    </article>
+
+    <article class="card">
+      <h2>3. Deposit</h2>
+      <div class="row"><label for="depositAccountId">Account ID</label><input id="depositAccountId"></div>
+      <div class="row"><label for="depositAmount">Amount</label><input id="depositAmount" value="250.00"></div>
+      <div class="row"><label for="depositReason">Reason</label><input id="depositReason" value="UI savings deposit"></div>
+      <button id="depositBtn">Deposit</button>
+      <div id="depositStatus" class="status"></div>
+    </article>
+
+    <article class="card">
+      <h2>4. Transfer</h2>
+      <div class="row"><label for="transferSourceAccountId">Source Account ID</label><input id="transferSourceAccountId"></div>
+      <div class="row"><label for="transferDestinationAccountId">Destination Account ID</label><input id="transferDestinationAccountId"></div>
+      <div class="row"><label for="transferAmount">Amount</label><input id="transferAmount" value="300.00"></div>
+      <div class="row"><label for="transferClientRequestId">Client Request ID</label><input id="transferClientRequestId" placeholder="ui-trf-001"></div>
+      <button id="transferBtn">Transfer</button>
+      <div id="transferStatus" class="status"></div>
+    </article>
+
+    <article class="card">
+      <h2>5. Portfolio Holding</h2>
+      <div class="row"><label for="holdingCustomerId">Customer ID</label><input id="holdingCustomerId"></div>
+      <div class="row"><label for="holdingSymbol">Symbol</label><input id="holdingSymbol" value="EQUITY"></div>
+      <div class="row"><label for="holdingMarketValue">Market Value</label><input id="holdingMarketValue" value="12000.50"></div>
+      <button id="holdingBtn">Add Holding</button>
+      <div id="holdingStatus" class="status"></div>
+    </article>
+
+    <article class="card">
+      <h2>6. Rebalance Preview</h2>
+      <div class="row"><label for="rebalanceCustomerId">Customer ID</label><input id="rebalanceCustomerId"></div>
+      <button id="rebalanceBtn">Preview Rebalance</button>
+      <div id="rebalanceStatus" class="status"></div>
+    </article>
+  </section>
+</div>
+
+<script>
+  const state = {
+    customerId: null,
+    lastAccountId: null,
+    firstAccountId: null,
+    secondAccountId: null
+  };
+
+  const byId = (id) => document.getElementById(id);
+
+  function writeStatus(elementId, payload, ok) {
+    const el = byId(elementId);
+    const text = typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
+    el.textContent = text;
+    el.classList.remove("ok", "error");
+    el.classList.add(ok ? "ok" : "error");
+  }
+
+  async function apiCall(path, method, body) {
+    const response = await fetch(path, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      data = { message: await response.text() };
+    }
+
+    return { ok: response.ok, status: response.status, data };
+  }
+
+  byId("createCustomerBtn").addEventListener("click", async () => {
+    const payload = {
+      fullName: byId("customerName").value,
+      email: byId("customerEmail").value || `ui.${crypto.randomUUID()}@example.com`,
+      riskProfile: byId("customerRisk").value
+    };
+
+    const result = await apiCall("/api/v1/customers", "POST", payload);
+    writeStatus("customerStatus", result.data, result.ok);
+    if (result.ok && result.data.id) {
+      state.customerId = result.data.id;
+      byId("accountCustomerId").value = state.customerId;
+      byId("holdingCustomerId").value = state.customerId;
+      byId("rebalanceCustomerId").value = state.customerId;
+    }
+  });
+
+  byId("createAccountBtn").addEventListener("click", async () => {
+    const payload = {
+      customerId: byId("accountCustomerId").value,
+      currency: "USD",
+      openingBalance: Number(byId("accountOpeningBalance").value)
+    };
+
+    const result = await apiCall("/api/v1/accounts", "POST", payload);
+    writeStatus("accountStatus", result.data, result.ok);
+    if (result.ok && result.data.id) {
+      state.lastAccountId = result.data.id;
+      if (!state.firstAccountId) {
+        state.firstAccountId = result.data.id;
+      } else {
+        state.secondAccountId = result.data.id;
+      }
+
+      byId("depositAccountId").value = state.firstAccountId;
+      byId("transferSourceAccountId").value = state.firstAccountId;
+      byId("transferDestinationAccountId").value = state.secondAccountId || "";
+    }
+  });
+
+  byId("depositBtn").addEventListener("click", async () => {
+    const accountId = byId("depositAccountId").value;
+    const payload = {
+      amount: Number(byId("depositAmount").value),
+      reason: byId("depositReason").value
+    };
+
+    const result = await apiCall(`/api/v1/accounts/${accountId}/deposit`, "POST", payload);
+    writeStatus("depositStatus", result.data, result.ok);
+  });
+
+  byId("transferBtn").addEventListener("click", async () => {
+    const payload = {
+      sourceAccountId: byId("transferSourceAccountId").value,
+      destinationAccountId: byId("transferDestinationAccountId").value,
+      amount: Number(byId("transferAmount").value),
+      clientRequestId: byId("transferClientRequestId").value || `ui-trf-${crypto.randomUUID()}`
+    };
+
+    const result = await apiCall("/api/v1/accounts/transfer", "POST", payload);
+    writeStatus("transferStatus", result.data, result.ok);
+  });
+
+  byId("holdingBtn").addEventListener("click", async () => {
+    const customerId = byId("holdingCustomerId").value;
+    const payload = {
+      symbol: byId("holdingSymbol").value,
+      marketValue: Number(byId("holdingMarketValue").value)
+    };
+
+    const result = await apiCall(`/api/v1/portfolios/${customerId}/holdings`, "POST", payload);
+    writeStatus("holdingStatus", result.data, result.ok);
+  });
+
+  byId("rebalanceBtn").addEventListener("click", async () => {
+    const customerId = byId("rebalanceCustomerId").value;
+    const result = await apiCall(`/api/v1/portfolios/${customerId}/rebalance-preview`, "POST");
+    writeStatus("rebalanceStatus", result.data, result.ok);
+  });
+</script>
+</body>
+</html>
