@@ -41,6 +41,9 @@ mvn clean test
 mvn spring-boot:run
 ```
 
+Reusable demo checklist:
+- `INTERVIEW_RUNBOOK.md`
+
 Open:
 - API docs: `http://localhost:8080/swagger-ui.html`
 - H2 console: `http://localhost:8080/h2-console`
@@ -110,8 +113,11 @@ Open:
 ## Testing strategy
 
 - `AccountApiIntegrationTest`: end-to-end API flow for customer/account/transfer/statement
+- `AccountApiRestAssuredTest`: reusable REST Assured coverage for happy path and failure scenarios
+- `PortfolioApiRestAssuredTest`: REST Assured coverage for holdings and rebalance flows
 - `PortfolioServiceTestNg`: TestNG example for domain logic
 - `WealthApiApplicationTests`: context boot sanity check
+- `ARCHITECTURE_FLOW.md`: interview-ready controller -> service -> repository walkthrough
 
 Run all tests:
 
