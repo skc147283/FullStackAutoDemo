@@ -70,6 +70,9 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Install parent POM into local Maven repo
+        run: mvn -B -N install
+
       - name: Install API artifact for UI module dependency
         run: mvn -B -pl api -DskipTests install
 
