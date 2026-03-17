@@ -43,7 +43,7 @@ pipeline {
                 expression { params.RUN_UI_SMOKE }
             }
             steps {
-                sh 'mvn -B -pl api -DskipTests install'
+                sh 'mvn -B -pl api -am -DskipTests install'
                 sh 'mvn -B -pl ui-tests verify -Dit.test=SmokeUiIT -Dui.headless=true'
             }
             post {
