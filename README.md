@@ -15,7 +15,7 @@ This project demonstrates critical API engineering patterns used in fintech syst
 
 ## Tech stack
 
-- Java 17
+- Java 21
 - Spring Boot 3
 - Spring Web + Validation + Data JPA
 - H2 in-memory DB
@@ -192,8 +192,8 @@ mvn -Pdb-tests verify
 
 ## Jenkins CI/CD setup
 
-1. Install Jenkins with JDK 17 and Maven 3 tools configured as:
-  - `jdk17`
+1. Install Jenkins with JDK 21 and Maven 3 tools configured as:
+  - `jdk21`
    - `maven3`
 2. Create Pipeline job and point to this repo.
 3. Jenkins reads `Jenkinsfile` and runs build + tests automatically.
@@ -341,16 +341,18 @@ The workflow `.github/workflows/render-ui-smoke.yml` can be run manually or afte
 If you want Jenkins with zero hosting cost, run it locally using Docker Compose:
 
 ```bash
-docker compose -f docker-compose.jenkins.yml up -d
+docker compose -f docker-compose.jenkins.yml up -d --build
 ```
 
 Then open `http://localhost:8081` and complete setup.
+
+This compose setup builds a local Jenkins image from `jenkins/Dockerfile` with Java 21 LTS and Maven preinstalled.
 
 Recommended Jenkins setup for this repo:
 
 1. Install suggested plugins: Pipeline, Git, Maven Integration, JUnit.
 2. Configure tools in Jenkins Global Tool Configuration:
-  - JDK name: `jdk17`
+  - JDK name: `jdk21`
   - Maven name: `maven3`
 3. Create a Pipeline job from this repository.
 4. Use `Jenkinsfile` in repo root.

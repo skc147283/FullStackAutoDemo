@@ -1,6 +1,9 @@
 services:
   jenkins:
-    image: jenkins/jenkins:lts-jdk17
+    build:
+      context: .
+      dockerfile: jenkins/Dockerfile
+    image: wealth-jenkins:lts-jdk21-maven
     container_name: wealth-jenkins
     restart: unless-stopped
     ports:
