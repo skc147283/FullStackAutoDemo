@@ -78,7 +78,7 @@ Successfully delivered a comprehensive test automation framework for the Wealth 
 
 ### 5. Comprehensive Documentation
 
-**File:** `DASHBOARD_TEST_FRAMEWORK.md` (350+ lines)
+**File:** `docs/reports/DASHBOARD_TEST_FRAMEWORK.md` (350+ lines)
 
 Contains:
 - Framework architecture overview
@@ -204,9 +204,9 @@ mvn io.qameta.allure:allure-maven:report
 
 | Document | Location | Purpose |
 |----------|----------|---------|
-| **Framework Guide** | `DASHBOARD_TEST_FRAMEWORK.md` | Complete test framework documentation |
-| **Architecture Flow** | `ARCHITECTURE_FLOW.md` | System architecture diagram |
-| **Interview Runbook** | `INTERVIEW_RUNBOOK.md` | Demo execution steps |
+| **Framework Guide** | `docs/reports/DASHBOARD_TEST_FRAMEWORK.md` | Complete test framework documentation |
+| **Architecture Flow** | `docs/architecture/ARCHITECTURE_FLOW.md` | System architecture diagram |
+| **Interview Runbook** | `docs/interview/INTERVIEW_RUNBOOK.md` | Demo execution steps |
 | **README** | `README.md` | Project overview |
 
 ---
@@ -368,7 +368,7 @@ RestAPI_UI_DB/
 │   ├── src/test/resources/      # Feature files
 │   ├── pages/                   # Page objects
 │   └── pom.xml
-├── DASHBOARD_TEST_FRAMEWORK.md  # Framework documentation
+├── docs/reports/DASHBOARD_TEST_FRAMEWORK.md  # Framework documentation
 └── README.md                     # Project overview
 ```
 

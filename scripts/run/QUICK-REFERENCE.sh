@@ -48,8 +48,8 @@ cat << 'EOF'
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Option 1️⃣  - Run using the automated script (RECOMMENDED):
-    $ cd /Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB
-    $ ./run-25-percent-tests.sh
+   $ cd <repo-root>
+   $ ./scripts/run/run-25-percent-tests.sh
 
 Option 2️⃣  - Run manual commands:
     $ mvn clean                                    # Clean target folder
@@ -79,13 +79,13 @@ Test Breakdown:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 NEW FILES:
-  📄 run-25-percent-tests.sh (5.3 KB)
+   📄 scripts/run/run-25-percent-tests.sh (5.3 KB)
      └─ Automated test runner script with 5-step process
 
   📄 target/25-percent-test-report.html (16 KB)
      └─ Beautiful HTML dashboard with test metrics & analytics
 
-  📄 25-PERCENT-TEST-REPORT.md (10 KB)
+   📄 docs/reports/25-PERCENT-TEST-REPORT.md (10 KB)
      └─ Detailed documentation of all changes & results
 
 MODIFIED FILES (Email Pattern Updates):
@@ -100,7 +100,7 @@ MODIFIED FILES (Email Pattern Updates):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Case 1: Quick feedback (25% tests)
-  $ ./run-25-percent-tests.sh
+   $ ./scripts/run/run-25-percent-tests.sh
   ⏱️  Duration: ~5 seconds
   📊 Coverage: 25% (API tests only)
 
@@ -182,7 +182,7 @@ Environment Status:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Documentation:
-  📄 25-PERCENT-TEST-REPORT.md
+   📄 docs/reports/25-PERCENT-TEST-REPORT.md
      Detailed report on all changes, results, and configurations
 
 Test Report:
@@ -190,7 +190,7 @@ Test Report:
      Open in browser to view interactive dashboard
 
 Script:
-  🔧 run-25-percent-tests.sh
+   🔧 scripts/run/run-25-percent-tests.sh
      Automated runner with all 5 build/test/report steps
 
 Source Code:
@@ -213,7 +213,7 @@ A: Run: mvn -pl api -DskipTests install
    (Install API artifact to local Maven repo)
 
 Q: Script not executable
-A: Run: chmod +x run-25-percent-tests.sh
+A: Run: chmod +x scripts/run/run-25-percent-tests.sh
 
 Q: Email validation fails in tests
 A: Verify email pattern:
@@ -245,7 +245,7 @@ A: Check: api/target/surefire-reports/*.txt
    For 100% test coverage with UI + API + DB tests
 
 4. Integrate into CI/CD
-   Add: ./run-25-percent-tests.sh
+   Add: ./scripts/run/run-25-percent-tests.sh
    To: pre-commit or pre-push hooks for fast feedback
 
 5. Configure for Automation

@@ -73,8 +73,13 @@ RestAPI_UI_DB/
 │
 ├── pom.xml                              # Parent POM (properties, dependencies, plugins)
 ├── README.md                            # Project overview
-├── ARCHITECTURE_FLOW.md                 # Data flow & system design
-├── INTERVIEW_RUNBOOK.md                 # Quick reference for interviews
+├── docs/
+│   ├── architecture/                    # Architecture and optimization deep dives
+│   ├── guides/                          # Operational guides (reports, Allure)
+│   ├── interview/                       # Interview/demo walkthroughs
+│   └── reports/                         # Historical execution reports
+├── scripts/
+│   └── run/                             # Executable helper scripts
 │
 ├── api/                                 # Java Spring Boot Application
 │   ├── pom.xml
@@ -367,7 +372,7 @@ Allure provides interactive dashboards with timelines, history, and detailed met
 *Option 1: Using Allure CLI (Recommended)*
 ```bash
 # Prerequisites: brew install allure (if not already installed)
-cd /Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB
+cd <repo-root>
 
 # Run tests with Allure listeners enabled
 mvn -pl ui-tests -am verify
@@ -978,7 +983,7 @@ This framework balances:
 
 **Status**: ✅ Dependencies configured, ⏳ Listeners auto-discovery pending
 
-Allure provides rich, interactive test dashboards. For detailed setup instructions and troubleshooting, see [ALLURE_SETUP.md](ALLURE_SETUP.md).
+Allure provides rich, interactive test dashboards. For detailed setup instructions and troubleshooting, see [ALLURE_SETUP.md](../guides/ALLURE_SETUP.md).
 
 **Quick Start**:
 ```bash

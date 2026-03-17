@@ -43,7 +43,7 @@ The `allure-cucumber7-jvm` dependency includes plugins that auto-register:
 
 Run with verbose logging to confirm listeners are loaded:
 ```bash
-cd /Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB
+cd <repo-root>
 mvn -pl ui-tests -am -X verify 2>&1 | grep -i "allure\|listener"
 ```
 
@@ -56,7 +56,7 @@ If you see references to `AllureTestNg`, `AllureCucumber`, listener discovery su
 If listeners are detected, tests will automatically create `target/allure-results/` with JSON files:
 
 ```bash
-cd /Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB
+cd <repo-root>
 
 # Run full test suite
 mvn -pl ui-tests -am verify

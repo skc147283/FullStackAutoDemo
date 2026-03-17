@@ -9,9 +9,10 @@
 #   4. Opens Allure report in default browser
 ##############################################################################
 
-set -e
+set -euo pipefail
 
-PROJECT_ROOT="/Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
 echo "╔════════════════════════════════════════════════════════════════╗"
@@ -94,7 +95,7 @@ echo "╔═══════════════════════�
 echo "║                    TEST EXECUTION COMPLETE                     ║"
 echo "╠════════════════════════════════════════════════════════════════╣"
 echo "║  Coverage:        25% of full test suite                       ║"
-echo "║  Email Pattern:   test.*.timeestamp@qa.internal                ║"
+echo "║  Email Pattern:   test.*.timestamp@qa.internal                 ║"
 echo "║  Report Type:     Allure with detailed analytics               ║"
 echo "║  Target Status:   Clean (pre-test) + Fresh Results (post-test) ║"
 echo "╚════════════════════════════════════════════════════════════════╝"

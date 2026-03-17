@@ -2,7 +2,11 @@
 set -euo pipefail
 
 # Usage:
-# ./run-e2e-deployed.sh https://wealth-api-demo.onrender.com
+# ./scripts/run/run-e2e-deployed.sh https://wealth-api-demo.onrender.com
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: $0 <base-url> [suite]"

@@ -134,8 +134,8 @@ Total Test Suite: ~40+ API tests + 10 UI scenarios = ~50 tests
 
 ### Run 25% Test Suite (with Script)
 ```bash
-cd /Users/sureshkc/Desktop/Interview/API/RestAPI_UI_DB
-./run-25-percent-tests.sh
+cd <repo-root>
+./scripts/run/run-25-percent-tests.sh
 ```
 
 ### Run 25% Test Suite (Manual Steps)
@@ -264,7 +264,7 @@ Tests portfolio management endpoints:
 3. **Run full suite** when ready for comprehensive validation
 
 ### For Continuous Integration
-1. Add `run-25-percent-tests.sh` to pre-commit hooks for faster feedback
+1. Add `scripts/run/run-25-percent-tests.sh` to pre-commit hooks for faster feedback
 2. Configure CI/CD pipeline to run 25% on pull requests, 100% on merge
 3. Archive HTML report as build artifact for trend analysis
 
