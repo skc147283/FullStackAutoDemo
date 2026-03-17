@@ -1,7 +1,10 @@
 package com.interview.wealthapi.uitest.support;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Locale;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,8 +18,13 @@ public final class WebDriverFactory {
 
     public static WebDriver getOrCreate() {
         if (DRIVER.get() == null) {
-            WebDriverManager.chromedriver().setup();
             ChromeOptions options = new ChromeOptions();
+            configureLinuxCiBrowser(options);
+
+            if (System.getProperty("webdriver.chrome.driver") == null) {
+                WebDriverManager.chromedriver().setup();
+            }
+
             if (isHeadlessEnabled()) {
                 options.addArguments("--headless=new", "--disable-gpu");
             }
@@ -46,5 +54,33 @@ public final class WebDriverFactory {
             return Boolean.parseBoolean(configuredValue);
         }
         return Boolean.parseBoolean(System.getenv().getOrDefault("CI", "false"));
+    }
+
+    private static void configureLinuxCiBrowser(ChromeOptions options) {
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        if (!os.contains("linux")) {
+            return;
+        }
+
+        if (isExecutable("/usr/bin/chromedriver")) {
+            System.setProperty("webdriver.chrome.driver", "/usr/bin/chromedriver");
+        }
+
+        String[] browserCandidates = {
+                "/usr/bin/chromium",
+                "/usr/bin/chromium-browser",
+                "/usr/bin/google-chrome",
+                "/usr/bin/google-chrome-stable"
+        };
+        for (String candidate : browserCandidates) {
+            if (isExecutable(candidate)) {
+                options.setBinary(candidate);
+                break;
+            }
+        }
+    }
+
+    private static boolean isExecutable(String path) {
+        return Files.isExecutable(Path.of(path));
     }
 }
