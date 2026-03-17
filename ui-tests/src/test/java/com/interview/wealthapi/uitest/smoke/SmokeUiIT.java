@@ -16,7 +16,7 @@ import static io.cucumber.junit.platform.engine.Constants.PLUGIN_PROPERTY_NAME;
  */
 @Suite
 @IncludeEngines("cucumber")
-@SelectClasspathResource("features/smoke")
+@SelectClasspathResource("features/application/smoke")
 @ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = UiCucumberSuiteConfig.GLUE)
 @ConfigurationParameter(key = FILTER_TAGS_PROPERTY_NAME, value = "@smoke")
 @ConfigurationParameter(key = PLUGIN_PROPERTY_NAME,
