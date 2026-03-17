@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'RUN_UI_SMOKE', defaultValue: false, description: 'Run headless Selenium smoke UI tests in Jenkins')
+    }
+
     options {
         timestamps()
         disableConcurrentBuilds()
@@ -30,6 +34,22 @@ pipeline {
             post {
                 always {
                     junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+
+        stage('UI Smoke Tests') {
+            when {
+                expression { params.RUN_UI_SMOKE }
+            }
+            steps {
+                sh 'mvn -B -pl api -DskipTests install'
+                sh 'mvn -B -pl ui-tests verify -Dit.test=SmokeUiIT -Dui.headless=true'
+            }
+            post {
+                always {
+                    junit allowEmptyResults: true, testResults: '**/target/failsafe-reports/*.xml'
+                    archiveArtifacts allowEmptyArchive: true, artifacts: 'ui-tests/target/cucumber-reports/**,ui-tests/target/allure-results/**,ui-tests/target/site/allure-maven-plugin/**'
                 }
             }
         }
