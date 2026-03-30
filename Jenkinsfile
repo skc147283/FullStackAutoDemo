@@ -44,11 +44,11 @@ pipeline {
             }
             steps {
                 sh 'mvn -B -pl api -am -DskipTests install'
-                sh 'mvn -B -pl ui-tests verify -Dit.test=SmokeUiIT -Dui.headless=true'
+                sh 'mvn -B -pl ui-tests verify -Dit.test=SmokeUiJunitIT -Dui.headless=true'
             }
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: '**/target/failsafe-reports/TEST-*.xml'
+                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml,**/target/failsafe-reports/TEST-*.xml'
                     archiveArtifacts allowEmptyArchive: true, artifacts: 'ui-tests/target/cucumber-reports/**,ui-tests/target/allure-results/**,ui-tests/target/site/allure-maven-plugin/**'
                 }
             }
