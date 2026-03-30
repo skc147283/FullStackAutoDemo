@@ -44,7 +44,7 @@ pipeline {
             }
             steps {
                 sh 'mvn -B -pl api -am -DskipTests install'
-                sh 'mvn -B -pl ui-tests verify -Dit.test=SmokeUiJunitIT -Dui.headless=true'
+                sh 'mvn -B -pl ui-tests verify -Dit.test=*SmokeUi*IT -Dui.headless=true -Dfailsafe.failIfNoSpecifiedTests=false'
             }
             post {
                 always {
